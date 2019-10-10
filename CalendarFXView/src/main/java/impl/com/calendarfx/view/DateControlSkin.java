@@ -23,6 +23,7 @@ import com.calendarfx.model.Interval;
 import com.calendarfx.util.LoggingDomain;
 import com.calendarfx.view.DateControl;
 import com.calendarfx.view.DraggedEntry;
+import com.calendarfx.view.RecurrenceExceptionView;
 import impl.com.calendarfx.view.util.Util;
 import javafx.beans.InvalidationListener;
 import javafx.collections.ListChangeListener.Change;
@@ -52,6 +53,12 @@ public abstract class DateControlSkin<C extends DateControl> extends SkinBase<C>
 
         for (Calendar calendar : control.getCalendars()) {
             calendar.addEventHandler(calendarListener);
+            calendar.addEventHandler(evt -> {
+                Entry<?> entry = evt.getEntry();
+                if (evt.getEventType().getSuperType().equals(CalendarEvent.ENTRY_CHANGED) && entry.isRecurring()) {
+                    // System.out.println("This it?");
+                }
+            });
         }
 
         MapChangeListener<? super Object, ? super Object> propertiesListener = change -> {
@@ -114,6 +121,19 @@ public abstract class DateControlSkin<C extends DateControl> extends SkinBase<C>
         }
     }
 
+    private RecurrenceExceptionView recurrenceExceptionView;
+
+    private void recurringEventChanged(CalendarEvent evt) {
+        System.out.println(LocalTime.now().toString() + ": \"" + evt.toString() + '@' + System.identityHashCode(evt) + "\"");
+        Thread.dumpStack();
+
+        if (recurrenceExceptionView == null) {
+            recurrenceExceptionView = getSkinnable().getRecurrenceExceptionView();
+        }
+
+        recurrenceExceptionView.show(getSkinnable().getScene().getWindow());
+    }
+
     private void calendarChanged(CalendarEvent evt) {
 
         if (LoggingDomain.EVENTS.isLoggable(Level.FINE) && !(evt.getEntry() instanceof DraggedEntry)) {
@@ -126,6 +146,10 @@ public abstract class DateControlSkin<C extends DateControl> extends SkinBase<C>
 
         if (evt.getEventType().getSuperType().equals(CalendarEvent.ENTRY_CHANGED) && evt.getEntry().isRecurrence()) {
             return;
+        }
+
+        if (evt.getEventType().getSuperType().equals(CalendarEvent.ENTRY_CHANGED) && evt.getEntry().isRecurring()) {
+            recurringEventChanged(evt);
         }
 
         Util.runInFXThread(() -> {

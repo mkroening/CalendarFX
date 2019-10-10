@@ -159,6 +159,8 @@ public abstract class DateControl extends CalendarFXControl {
 
     private final WeakInvalidationListener weakUpdateCalendarListListener = new WeakInvalidationListener(updateCalendarListListener);
 
+    private RecurrenceExceptionView recurrenceExceptionView;
+
     /**
      * Constructs a new date control and initializes all factories and callbacks
      * with default implementations.
@@ -508,6 +510,15 @@ public abstract class DateControl extends CalendarFXControl {
      */
     public final void setDraggedEntry(DraggedEntry entry) {
         draggedEntryProperty().set(entry);
+    }
+
+    public final RecurrenceExceptionView getRecurrenceExceptionView() {
+        // See CalendarView.getPrintView()
+        if (recurrenceExceptionView == null) {
+            recurrenceExceptionView = new RecurrenceExceptionView();
+        }
+
+        return recurrenceExceptionView;
     }
 
     /**

@@ -152,6 +152,12 @@ public class Calendar implements EventTarget {
                 updateRecurrenceSourceEntry(evt, entry.getRecurrenceSourceEntry());
             }
         });
+        addEventHandler(evt -> {
+            Entry<?> entry = evt.getEntry();
+            if (evt.getEventType().getSuperType().equals(ENTRY_CHANGED) && entry.isRecurring()) {
+                System.out.println("This it?");
+            }
+        });
     }
 
     /**
@@ -862,11 +868,13 @@ public class Calendar implements EventTarget {
 
             requireNonNull(evt);
             Event.fireEvent(this, evt);
+            System.out.println("Fired!");
         }
     }
 
     @Override
     public final EventDispatchChain buildEventDispatchChain(EventDispatchChain givenTail) {
+        // TODO: inspect
         return givenTail.append((event, tail) -> {
             if (event instanceof CalendarEvent) {
                 for (EventHandler<CalendarEvent> handler : eventHandlers) {
